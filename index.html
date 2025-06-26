@@ -1,0 +1,139 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogos Famosos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-900 text-white">
+    <!-- Cabeçalho -->
+    <header class="bg-blue-800 py-6">
+        <nav class="container mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-bold">Jogos Famosos</h1>
+            <ul class="flex space-x-6">
+                <li><a href="#home" class="hover:text-blue-300">Início</a></li>
+                <li><a href="#gallery" class="hover:text-blue-300">Galeria</a></li>
+                <li><a href="#games" class="hover:text-blue-300">Jogos</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Seção Principal com Imagem de Fundo -->
+    <section id="home" class="container mx-auto py-12 relative">
+        <div class="absolute inset-0 bg-cover bg-center opacity-50" style="background-image: url('./fortnite.png'); z-index: -1;"></div>
+        <div class="relative z-10">
+            <h2 class="text-4xl font-bold mb-6 text-center">Explore os Jogos Mais Populares</h2>
+            <p class="text-lg mb-4">Fortnite, Minecraft e Call of Duty são ícones da indústria dos jogos, cada um com seu estilo único. De batalhas épicas a construções criativas, esses jogos conquistaram milhões de fãs no mundo todo.</p>
+            <p class="text-lg">Confira a galeria e conheça mais sobre cada um abaixo!</p>
+        </div>
+    </section>
+
+    <!-- Galeria -->
+    <section id="gallery" class="container mx-auto py-12">
+        <h2 class="text-3xl font-bold mb-6 text-center">Galeria de Jogos</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <div class="gallery-item">
+                <img src="./fortnite.png" alt="Fortnite" class="w-full h-64 object-cover rounded-lg cursor-pointer skeleton">
+                <p class="text-center mt-2">Fortnite</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./minecraft.png" alt="Minecraft" class="w-full h-64 object-cover rounded-lg cursor-pointer skeleton">
+                <p class="text-center mt-2">Minecraft</p>
+            </div>
+            <div class="gallery-item">
+                <img src="./callofduty.png" alt="Call of Duty" class="w-full h-64 object-cover rounded-lg cursor-pointer skeleton">
+                <p class="text-center mt-2">Call of Duty</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal para imagem ampliada -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center hidden">
+        <img id="modal-image" src="" alt="Imagem Ampliada" class="max-w-full max-h-full">
+        <button id="close-modal" class="absolute top-4 right-4 text-white text-2xl">×</button>
+    </div>
+
+    <!-- Seção sobre os Jogos -->
+    <section id="games" class="container mx-auto py-12">
+        <h2 class="text-3xl font-bold mb-6 text-center">Sobre os Jogos</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="p-4 bg-gray-800 rounded-lg">
+                <h3 class="text-xl font-bold mb-2">Fortnite</h3>
+                <p>Lançado em 2017 pela Epic Games, Fortnite é um battle royale gratuito com mecânicas de construção.</p>
+                <ul class="mt-2 space-y-2">
+                    <li><label><input type="checkbox" checked readonly> Battle Royale</label></li>
+                    <li><label><input type="checkbox" checked readonly> Multijogador</label></li>
+                    <li><label><input type="checkbox" readonly> Modo Criativo</label></li>
+                </ul>
+            </div>
+            <div class="p-4 bg-gray-800 rounded-lg">
+                <h3 class="text-xl font-bold mb-2">Minecraft</h3>
+                <p>Lançado em 2011 pela Mojang, Minecraft é o jogo mais vendido do mundo, com foco em criatividade.</p>
+                <ul class="mt-2 space-y-2">
+                    <li><label><input type="checkbox" readonly> Battle Royale</label></li>
+                    <li><label><input type="checkbox" checked readonly> Multijogador</label></li>
+                    <li><label><input type="checkbox" checked readonly> Modo Criativo</label></li>
+                </ul>
+            </div>
+            <div class="p-4 bg-gray-800 rounded-lg">
+                <h3 class="text-xl font-bold mb-2">Call of Duty</h3>
+                <p>Franquia da Activision, conhecida por campanhas intensas e multiplayer competitivo.</p>
+                <ul class="mt-2 space-y-2">
+                    <li><label><input type="checkbox" checked readonly> Battle Royale</label></li>
+                    <li><label><input type="checkbox" checked readonly> Multijogador</label></li>
+                    <li><label><input type="checkbox" readonly> Modo Criativo</label></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Rodapé -->
+    <footer class="bg-blue-800 py-6 text-center">
+        <p>© 2025 Jogos Famosos. Criado por Felipe José Delamura Jarenko.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
